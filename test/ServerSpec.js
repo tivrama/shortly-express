@@ -27,7 +27,6 @@ var xbeforeEach = function(){};
 
 
 describe('', function() {
-
   beforeEach(function() {
     // log out currently signed in user
     request('http://127.0.0.1:4568/logout', function(error, res, body) {});
@@ -49,10 +48,10 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
 
     // delete user Phillip from db so it can be created later for the test
@@ -61,17 +60,18 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
   });
 
   describe('Link creation:', function(){
 
     var requestWithSession = request.defaults({jar: true});
-    xbeforeEach(function(done){      // create a user that we can then log-in with
+    beforeEach(function(done){      // create a user that we can then log-in with
+console.log('=======TEST=======');
       new User({
           'username': 'Phillip',
           'password': 'Phillip'
@@ -110,6 +110,7 @@ describe('', function() {
 
     describe('Shortening links:', function(){
 
+
       var options = {
         'method': 'POST',
         'followAllRedirects': true,
@@ -118,7 +119,6 @@ describe('', function() {
           'url': 'http://www.github.com/'
         }
       };
-
       it('Responds with the short code', function(done) {
         requestWithSession(options, function(error, res, body) {
           expect(res.body.url).to.equal('http://www.github.com/');
@@ -140,22 +140,22 @@ describe('', function() {
             });
         });
       });
-
+//--------Fix expected------------------------------------------------------------
       it('Fetches the link url title', function (done) {
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
-            .where('title', '=', 'GitHub · Where software is built')
+            .where('title', '=', 'How people build software · GitHub') //GitHub · Where software is built
             .then(function(urls) {
               if (urls['0'] && urls['0']['title']) {
                 var foundTitle = urls['0']['title'];
               }
-              expect(foundTitle).to.equal('GitHub · Where software is built');
+              expect(foundTitle).to.equal('How people build software · GitHub'); 
               done();
             });
         });
       });
-
     }); // 'Shortening links'
+
 
     describe('With previously saved urls:', function(){
 
@@ -220,7 +220,7 @@ describe('', function() {
 
   }); // 'Link creation'
 
-    xbeforeEach(function(done){('Privileged Access:', function(){
+    beforeEach(function(done){('Privileged Access:', function(){
 
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
       request('http://127.0.0.1:4568/', function(error, res, body) {
@@ -245,7 +245,7 @@ describe('', function() {
 
   }); // 'Priviledged Access'
 
-  xdescribe('Account Creation:', function(){
+  describe('Account Creation:', function(){
 
     it('Signup creates a user record', function(done) {
       var options = {
@@ -293,7 +293,7 @@ describe('', function() {
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
@@ -340,4 +340,5 @@ describe('', function() {
 
   }); // 'Account Login'
 
+});
 });

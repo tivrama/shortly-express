@@ -81,6 +81,44 @@ function(req, res) {
 
 
 
+
+app.post('/login', function(req, res) {
+  console.log('inside login post: ', req.body);
+
+  //Check if user and password exist 
+  //If the do not match, redirect to LogIn 
+  // if (!util.isValidUrl(uri)) {
+  //   console.log('Not a valid url: ', uri);
+  //   return res.send(404);
+  // }
+
+  // new Link({ url: uri }).fetch().then(function(found) {
+  //   if (found) {
+  //     res.send(200, found.attributes);
+  //   } else {
+  //     util.getUrlTitle(uri, function(err, title) {
+  //       if (err) {
+  //         console.log('Error reading URL heading: ', err);
+  //         return res.send(404);
+  //       }
+
+        var user = new User({
+          users: 'Bilbo',
+          password: 'Frodo'
+        });
+
+        user.save().then(function(newUser) {
+          users.add(newUser);
+          res.send(200, newUser);
+        });
+
+  res.end("testing POST")
+
+});
+
+
+
+
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
 // assume the route is a short code and try and handle it here.
@@ -88,6 +126,7 @@ function(req, res) {
 /************************************************************/
 
 app.get('/*', function(req, res) {
+  console.log('Test inside GET');
   new Link({ code: req.params[0] }).fetch().then(function(link) {
     if (!link) {
       res.redirect('/');

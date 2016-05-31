@@ -1,0 +1,13 @@
+Notes
+
+2016-05-shortly-express:
+
+- shortly.js:  row78 - Authenication code
+
+
+- client
+	- app.js:  
+
+
+- app
+	- config.js:  
