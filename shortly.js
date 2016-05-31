@@ -83,34 +83,32 @@ function(req, res) {
 
 
 app.post('/login', function(req, res) {
-  console.log('inside login post: ', req.body);
+  console.log('Body inside post: ', req.body);
 
-  //Check if user and password exist 
-  //If the do not match, redirect to LogIn 
-  // if (!util.isValidUrl(uri)) {
-  //   console.log('Not a valid url: ', uri);
-  //   return res.send(404);
+  //save test username and pswd to vars
+  // var userName = req.json;
+  // var passWord = req.body.User.password;
+  // console.log(userName);
+
+  var user = new User({
+    username: 'waldo2',
+    password: '2345'
+  });
+
+
+  //check if username and password already exist in table
+  // Check if user and password exist 
+  // If the do not match, redirect to LogIn 
+  // if (!util.doesUserExist(username, pswd)) {
+  //   console.log('User already exists: ', username);
+  //   //rediretct to index
+  //   res.end("user already exists");
   // }
 
-  // new Link({ url: uri }).fetch().then(function(found) {
-  //   if (found) {
-  //     res.send(200, found.attributes);
-  //   } else {
-  //     util.getUrlTitle(uri, function(err, title) {
-  //       if (err) {
-  //         console.log('Error reading URL heading: ', err);
-  //         return res.send(404);
-  //       }
-
-        var user = new User({
-          users: 'Bilbo',
-          password: 'Frodo'
-        });
-
-        user.save().then(function(newUser) {
-          users.add(newUser);
-          res.send(200, newUser);
-        });
+  user.save().then(function(newUser) {
+    users.add(newUser);
+    res.send(200, newUser);
+  });
 
   res.end("testing POST")
 
