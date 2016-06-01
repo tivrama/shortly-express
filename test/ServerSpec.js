@@ -71,7 +71,6 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
     beforeEach(function(done){      // create a user that we can then log-in with
-console.log('=======TEST=======');
       new User({
           'username': 'Phillip',
           'password': 'Phillip'

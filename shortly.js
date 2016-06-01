@@ -10,6 +10,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+var session = require('express-session');
 
 var app = express();
 
@@ -21,27 +22,28 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-
-
-app.get('/', 
-function(req, res) {
+//---from solution-------------------------------
+app.use(session({
+  secret: 'shhh, it\'s a secret',
+  resave: false,
+  saveUninitialized: true
+}));
+//---from solution-------------------------------
+app.get('/', util.checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
+app.get('/create', util.checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
-function(req, res) {
+app.get('/links', util.checkUser, function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
-function(req, res) {
+app.post('/links', util.checkUser, function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -79,43 +81,80 @@ function(req, res) {
 // e.g. login, logout, etc.
 /************************************************************/
 
-
-
-
-app.post('/login', function(req, res) {
-  console.log('Body inside post: ', req.body);
-
-  //save test username and pswd to vars
-  // var userName = req.json;
-  // var passWord = req.body.User.password;
-  // console.log(userName);
-
-  var user = new User({
-    username: 'waldo2',
-    password: '2345'
-  });
-
-
-  //check if username and password already exist in table
-  // Check if user and password exist 
-  // If the do not match, redirect to LogIn 
-  // if (!util.doesUserExist(username, pswd)) {
-  //   console.log('User already exists: ', username);
-  //   //rediretct to index
-  //   res.end("user already exists");
-  // }
-
-  user.save().then(function(newUser) {
-    users.add(newUser);
-    res.send(200, newUser);
-  });
-
-  res.end("testing POST")
-
+//---from solution-------------------------------
+//if login link is clicked, the get will direct to the login screen
+app.get('/login', function(req, res) {
+  res.render('login');
 });
 
+//user enters creds into login input
+app.post('/login', function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
 
+  //a user is constructed to be tested against the user table in the database
+  new User({ username: username })
+    .fetch()
+    .then(function(user) {
+      //if user does not exist, redirect to login
+      if (!user) {
+        res.redirect('/login');
+      } else {
+        //otherwise, see if the password matches
+        user.comparePassword(password, function(match) {
+          if (match) {
+            //if pswd is a match, call createSession from utilities
+            util.createSession(req, res, user);
+          } else {
+            //otherwise, redirect to login
+            res.redirect('/login');
+          }
+        });
+      }
+  });
+});
 
+//when clicking logout, session switch is flipped, user loses acess to index and is directed to login
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(){
+    res.redirect('/login');
+  });
+});
+
+//sign up is clicked, triggering get request to be directed to signup screen
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+//user enters signup info
+app.post('/signup', function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+  //new user name is constructed to check against db to see if already exists
+  new User({ username: username })
+    .fetch()
+    .then(function(user) {
+      //if user does not already exist, construct user with pswd
+      if (!user) {
+        var newUser = new User({
+          username: username,
+          password: password
+        });
+        //save new user to db
+        newUser.save()
+          //once done, then create session
+          .then(function(newUser) {
+            util.createSession(req, res, newUser);
+            Users.add(newUser);
+          });
+      } else {
+        //if username already exists, redirect to signup
+        console.log('Account already exists');
+        res.redirect('/signup');
+      }
+    });
+});
+//---from solution-------------------------------
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
@@ -124,7 +163,6 @@ app.post('/login', function(req, res) {
 /************************************************************/
 
 app.get('/*', function(req, res) {
-  console.log('Test inside GET');
   new Link({ code: req.params[0] }).fetch().then(function(link) {
     if (!link) {
       res.redirect('/');
